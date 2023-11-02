@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class GenericSearch {
+public class GenericSearch extends App {
     
 }
 
