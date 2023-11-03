@@ -134,6 +134,7 @@ public class LLAPSearch extends GenericSearch {
             reqFood.waitTime = requestFoodDelay;
             reqFood.parentNode = node;
             reqFood.operator = "reqFood";
+            reqFood.depth += 1;
             nodes.add(reqFood);
             // request materials node creation and addition
             Node reqMaterials = new Node(node);
@@ -141,6 +142,7 @@ public class LLAPSearch extends GenericSearch {
             reqMaterials.waitTime = requestMaterialsDelay;
             reqMaterials.parentNode = node;
             reqMaterials.operator = "reqMaterials";
+            reqMaterials.depth += 1;
             nodes.add(reqMaterials);
             // request energy node creation and addition
             Node reqEnergy = new Node(node);
@@ -148,6 +150,7 @@ public class LLAPSearch extends GenericSearch {
             reqEnergy.waitTime = requestEnergyDelay;
             reqEnergy.parentNode = node;
             reqEnergy.operator = "reqEnergy";
+            reqEnergy.depth += 1;
             nodes.add(reqEnergy);
         }
         //wait node creation and addition
@@ -156,6 +159,7 @@ public class LLAPSearch extends GenericSearch {
         wait.waitTime--;}
         wait.parentNode = node;
         wait.operator = "wait";
+        wait.depth += 1;
         nodes.add(wait);
         // Build 1 and 2 creation and addition
         if (node.food > build1Food-1 && node.energy > build1Energy-1 && node.materials > build1Materials-1 && node.money > build1TotalPrice-upkeepCost){
@@ -168,6 +172,7 @@ public class LLAPSearch extends GenericSearch {
         Build1.parentNode = node;
         Build1.moneySpent += build1TotalPrice - upkeepCost;
         Build1.operator = "Build1";
+        Build1.depth += 1;
         nodes.add(Build1);
         }
         if (node.food > build2Food-1 && node.energy > build2Energy-1 && node.materials > build2Materials-1 && node.money > build2TotalPrice-upkeepCost){
@@ -180,6 +185,7 @@ public class LLAPSearch extends GenericSearch {
         Build2.parentNode = node;
         Build2.moneySpent += build2TotalPrice - upkeepCost;
         Build2.operator = "Build2";
+        Build2.depth += 1;
         nodes.add(Build2);
         }
 

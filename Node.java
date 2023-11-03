@@ -17,7 +17,7 @@ public class Node {
 
     boolean flagFood, flagMaterials, flagEnergy;
     
-    public Node(int prosperity, int food, int materials, int energy, int moneySpent, Node parentNode, String operator){
+    public Node(int prosperity, int food, int materials, int energy, int moneySpent, Node parentNode, String operator, int depth){
         this.prosperity = prosperity;
         this.food = food;
         this.materials = materials;
@@ -25,6 +25,7 @@ public class Node {
         this.moneySpent = moneySpent;
         this.parentNode = parentNode;
         this.operator = operator;
+        this.depth = depth;
     }
 
     public Node(Node node){
@@ -40,6 +41,7 @@ public class Node {
         this.flagEnergy = node.flagEnergy;
         this.waitTime = node.waitTime;
         this.money = node.money;
+        this.depth = node.depth;
     }
 
     // public void requestFood(int amount, int foodTime){
