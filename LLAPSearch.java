@@ -39,6 +39,7 @@ public class LLAPSearch extends GenericSearch {
 
     public String solve(String initalState, String strategy, Boolean visualize) {
         String[] initalArray = initalState.split(";");
+        initializeVariables(initalArray);
 
         return "1";
     }
@@ -199,7 +200,31 @@ public class LLAPSearch extends GenericSearch {
         }
     }
 
-    public void iterativeDeepening(){
-        
+    public void iterativeDeepening(Node initNode){
+        expansion.clear();
+        nodes.clear();
+
+        nodes.add(initNode);
+        boolean endLoop = false;
+        int i = 0;
+        while (!endLoop){
+            endLoop = true;
+            for (int j = 0; j <= i; j++){
+                Node currentNode = nodes.get(nodes.size() - 1);
+                if (currentNode.depth < i)
+                    expandNode(currentNode, true);
+                else if (currentNode.money > 0){
+                    endLoop = false;
+                }
+                if(goalState(currentNode)){
+                    endLoop = true;
+                    break;
+                }
+            }
+            nodes.clear();
+            nodes.add(initNode);
+            i++;
+                
+        }
     }
 }
