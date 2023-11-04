@@ -1,8 +1,8 @@
 import java.util.ArrayList;
 
 public class LLAPSearch extends GenericSearch {
-    ArrayList<Node> expansion;
-    ArrayList<Node> nodes;
+    ArrayList<Node> expansion = new ArrayList<>();
+    ArrayList<Node> nodes = new ArrayList<>();
 
     int initProsperity;
     int initFood;
@@ -40,6 +40,10 @@ public class LLAPSearch extends GenericSearch {
     public String solve(String initalState, String strategy, Boolean visualize) {
         String[] initalArray = initalState.split(";");
         initializeVariables(initalArray);
+        
+        Node initNode = new Node(initProsperity, initFood, initMaterials, initEnergy, 0, null, null, 0);
+        iterativeDeepening(initNode);
+        System.out.println(expansion);
 
         return "1";
     }
@@ -201,9 +205,8 @@ public class LLAPSearch extends GenericSearch {
     }
 
     public void iterativeDeepening(Node initNode){
-        expansion.clear();
         nodes.clear();
-
+        expansion.clear();
         nodes.add(initNode);
         boolean endLoop = false;
         int i = 0;
@@ -213,8 +216,13 @@ public class LLAPSearch extends GenericSearch {
                 Node currentNode = nodes.get(nodes.size() - 1);
                 if (currentNode.depth < i)
                     expandNode(currentNode, true);
-                else if (currentNode.money > 0){
-                    endLoop = false;
+                else{
+                    nodes.remove(nodes.size() - 1);
+                    expansion.add(currentNode);
+                    if (!nodes.isEmpty())
+                        j = 0;
+                    if(currentNode.money > 0)
+                        endLoop = false;
                 }
                 if(goalState(currentNode)){
                     endLoop = true;
