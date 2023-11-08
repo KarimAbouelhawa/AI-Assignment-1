@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Stack;
 
 public class LLAPSearch extends GenericSearch {
     ArrayList<Node> expansion = new ArrayList<>();
@@ -38,13 +39,18 @@ public class LLAPSearch extends GenericSearch {
     int upkeepCost;
 
     public String solve(String initalState, String strategy, Boolean visualize) {
+        nodes.clear();
+        expansion.clear();
         String[] initalArray = initalState.split(";");
         initializeVariables(initalArray);
         
         Node initNode = new Node(initProsperity, initFood, initMaterials, initEnergy, 0, null, null, 0);
-        iterativeDeepening(initNode);
+        ucs(initNode);
         System.out.println(expansion);
-
+        System.out.println(expansion.get(0).operator);
+        System.out.println(expansion.get(1).operator);
+        System.out.println(expansion.get(2).operator);
+        System.out.println(expansion.get(3).operator);
         return "1";
     }
 
@@ -183,6 +189,9 @@ public class LLAPSearch extends GenericSearch {
                 Build1.moneySpent += build1TotalPrice - upkeepCost;
                 Build1.operator = "Build1";
                 Build1.depth += 1;
+                if (Build1.waitTime!=0) {
+                    Build1.waitTime--;
+                }
                 if (Build1.money >= 0)
                     nodes.add(Build1);
             }
@@ -198,6 +207,9 @@ public class LLAPSearch extends GenericSearch {
                 Build2.moneySpent += build2TotalPrice - upkeepCost;
                 Build2.operator = "Build2";
                 Build2.depth += 1;
+                if (Build2.waitTime!=0) {
+                    Build2.waitTime--;
+                }
                 if (Build2.money >= 0)
                     nodes.add(Build2);
             }
@@ -235,4 +247,44 @@ public class LLAPSearch extends GenericSearch {
                 
         }
     }
+
+    
+    public void ucs(Node node){
+        nodes.add(node);
+        expandNode(node, false);
+        Stack<Node> ucs = new Stack<>();
+        int[] min = new int[2];
+        // get the individual nodes and push into stack
+                min[0] = 0;
+                min[1] = node.money;
+                ucs.push(nodes.get(0));
+        for (int j = 1; j <= ucs.size(); j++){
+             // lowest cost node should be on top
+            Node current = ucs.pop(); 
+            expandNode(current, false);
+            if (goalState(current)){
+                break;
+            }
+            for (int i = 1; i <= nodes.size()-1; i++) {
+            int money = nodes.get(i).money;
+            if (nodes.get(i).money < min[1]){
+                min[0] = i;
+                min[1] = money;
+            }
+            else{
+                ucs.push(nodes.get(i));
+            }
+            ucs.push(nodes.get(min[0]));
+            }
+
+        }
+        
+        //remainingprosperity/min(prosperityb1 + prosperityb2) * min(b1p,b2p).buildcost (+ previouscost) A*
+        //remainingprosperity greedy
+        //moneyspent greedy
+        //
+        
+        } 
+    
+
 }
