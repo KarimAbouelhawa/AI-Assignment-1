@@ -1,6 +1,6 @@
+package code;
 public class App {
     public static void main(String[] args) throws Exception {
-        LLAPSearch search = new LLAPSearch();
         
         String init = "50;"+
         "22,22,22;" +
@@ -9,6 +9,6 @@ public class App {
         "300,5,7,3,20;" +
         "500,8,6,3,40;";
 
-        search.solve(init,"a", false);
+        LLAPSearch.solve(init,"a", false);
     }
 }

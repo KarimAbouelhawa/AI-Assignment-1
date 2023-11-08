@@ -1,60 +1,88 @@
+package code;
 import java.util.ArrayList;
 import java.util.Stack;
 
 public class LLAPSearch extends GenericSearch {
-    ArrayList<Node> expansion = new ArrayList<>();
-    ArrayList<Node> nodes = new ArrayList<>();
+    static ArrayList<Node> expansion = new ArrayList<>();
+    static ArrayList<Node> nodes = new ArrayList<>();
 
-    int initProsperity;
-    int initFood;
-    int initMaterials;
-    int initEnergy;
+    static int initProsperity;
+    static int initFood;
+    static int initMaterials;
+    static int initEnergy;
 
-    int priceFood;
-    int priceMaterials;
-    int priceEnergy;
+    static int priceFood;
+    static int priceMaterials;
+    static int priceEnergy;
 
-    int requestFoodAmount;
-    int requestMaterialsAmount;
-    int requestEnergyAmount;
+    static int requestFoodAmount;
+    static int requestMaterialsAmount;
+    static int requestEnergyAmount;
 
-    int requestFoodDelay;
-    int requestMaterialsDelay;
-    int requestEnergyDelay;
+    static int requestFoodDelay;
+    static int requestMaterialsDelay;
+    static int requestEnergyDelay;
 
-    int build1Price;
-    int build1Food;
-    int build1Materials;
-    int build1Energy;
-    int build1Prosperity;
+    static int build1Price;
+    static int build1Food;
+    static int build1Materials;
+    static int build1Energy;
+    static int build1Prosperity;
 
-    int build2Price;
-    int build2Food;
-    int build2Materials;
-    int build2Energy;
-    int build2Prosperity;
+    static int build2Price;
+    static int build2Food;
+    static int build2Materials;
+    static int build2Energy;
+    static int build2Prosperity;
 
-    int build1TotalPrice;
-    int build2TotalPrice;
-    int upkeepCost;
+    static int build1TotalPrice;
+    static int build2TotalPrice;
+    static int upkeepCost;
 
-    public String solve(String initalState, String strategy, Boolean visualize) {
+    public static String solve(String initalState, String strategy, Boolean visualize) {
         nodes.clear();
         expansion.clear();
         String[] initalArray = initalState.split(";");
         initializeVariables(initalArray);
         
         Node initNode = new Node(initProsperity, initFood, initMaterials, initEnergy, 0, null, null, 0);
-        ucs(initNode);
+        switch (strategy) {
+            case "BF":
+                
+                break;
+            case "DF":
+                
+                break;
+            case "ID":
+                iterativeDeepening(initNode);
+                break;
+            case "UC":
+                
+                break;
+            
+        
+            default:
+                break;
+        }
         System.out.println(expansion);
-        System.out.println(expansion.get(0).operator);
-        System.out.println(expansion.get(1).operator);
-        System.out.println(expansion.get(2).operator);
-        System.out.println(expansion.get(3).operator);
-        return "1";
+        return generateResultString();
     }
 
-    public void initializeVariables(String[] parameters) {
+    private static String generateResultString() {
+        String res = "";
+        Node currentNode = expansion.get(expansion.size() - 1);
+        if (currentNode.prosperity < 100){
+            return "NOSOLUTION";
+        }
+        while(currentNode.operator != null){
+            res += currentNode.operator + ",";
+            currentNode = currentNode.parentNode;
+        }
+        res += ";" + Integer.toString(expansion.get(expansion.size() - 1).moneySpent) + ";" + Integer.toString(expansion.size());
+        return res;
+    }
+
+    public static void initializeVariables(String[] parameters) {
         initProsperity = Integer.parseInt(parameters[0]);
 
         // Get initial values of resources
@@ -107,14 +135,14 @@ public class LLAPSearch extends GenericSearch {
         upkeepCost = priceFood + priceEnergy + priceMaterials;
     }
 
-    public Boolean goalState(Node node) {
+    public static Boolean goalState(Node node) {
         if (node.prosperity >= 100)
             return true;
         else
             return false;
     }
 
-    public void expandNode(Node node, boolean type) {
+    public static void expandNode(Node node, boolean type) {
         // type true = stack, false = queue
         expansion.add(node);
         node.food--;
@@ -168,14 +196,14 @@ public class LLAPSearch extends GenericSearch {
                 nodes.add(reqEnergy);
             }
             // wait node creation and addition
-            Node wait = new Node(node);
-            if (wait.waitTime != 0) {
+            if (node.waitTime > 0) {    
+                Node wait = new Node(node);
                 wait.waitTime--;
+                wait.parentNode = node;
+                wait.operator = "wait";
+                wait.depth += 1;
+                nodes.add(wait);
             }
-            wait.parentNode = node;
-            wait.operator = "wait";
-            wait.depth += 1;
-            nodes.add(wait);
             // Build 1 and 2 creation and addition
             if (node.food > build1Food - 1 && node.energy > build1Energy - 1 && node.materials > build1Materials - 1
                     && node.money > build1TotalPrice - upkeepCost) {
@@ -216,7 +244,7 @@ public class LLAPSearch extends GenericSearch {
         }
     }
 
-    public void iterativeDeepening(Node initNode){
+    public static void iterativeDeepening(Node initNode){
         nodes.clear();
         expansion.clear();
         nodes.add(initNode);
@@ -232,7 +260,7 @@ public class LLAPSearch extends GenericSearch {
                     nodes.remove(nodes.size() - 1);
                     expansion.add(currentNode);
                     if (!nodes.isEmpty())
-                        j = 0;
+                        j -= 1;
                     if(currentNode.money > 0)
                         endLoop = false;
                 }
@@ -249,7 +277,7 @@ public class LLAPSearch extends GenericSearch {
     }
 
     
-    public void ucs(Node node){
+    public static void ucs(Node node){
         nodes.add(node);
         expandNode(node, false);
         Stack<Node> ucs = new Stack<>();

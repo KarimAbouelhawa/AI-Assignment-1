@@ -1,3 +1,4 @@
+package code;
 public class Node {
     int prosperity;
     int food;
