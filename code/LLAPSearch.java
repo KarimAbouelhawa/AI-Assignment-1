@@ -1,5 +1,7 @@
 package code;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Stack;
 
 public class LLAPSearch extends GenericSearch {
@@ -48,7 +50,7 @@ public class LLAPSearch extends GenericSearch {
         Node initNode = new Node(initProsperity, initFood, initMaterials, initEnergy, 0, null, null, 0);
         switch (strategy) {
             case "BF":
-                
+                BF(initNode);
                 break;
             case "DF":
                 
@@ -69,14 +71,18 @@ public class LLAPSearch extends GenericSearch {
     }
 
     private static String generateResultString() {
-        String res = "";
+    	ArrayList<Node> resultNodes = new ArrayList<>();
+    	String res = "";
         Node currentNode = expansion.get(expansion.size() - 1);
         if (currentNode.prosperity < 100){
             return "NOSOLUTION";
         }
-        while(currentNode.operator != null){
-            res += currentNode.operator + ",";
-            currentNode = currentNode.parentNode;
+        while(currentNode.parentNode != null) {
+        	resultNodes.add(currentNode);
+        	currentNode = currentNode.parentNode;
+        }
+        while(!resultNodes.isEmpty()){
+            res += resultNodes.remove(resultNodes.size()-1).operator + ",";
         }
         res += ";" + Integer.toString(expansion.get(expansion.size() - 1).moneySpent) + ";" + Integer.toString(expansion.size());
         return res;
@@ -306,6 +312,7 @@ public class LLAPSearch extends GenericSearch {
             }
 
         }
+   
         
         //remainingprosperity/min(prosperityb1 + prosperityb2) * min(b1p,b2p).buildcost (+ previouscost) A*
         //remainingprosperity greedy
@@ -313,6 +320,20 @@ public class LLAPSearch extends GenericSearch {
         //
         
         } 
+    public static void BF(Node initNode) {
+    	nodes.add(initNode);
+        while(true) {
+        	Node currentNode = nodes.get(0);
+        	if(goalState(currentNode)) {
+        		expansion.add(currentNode);
+        		break;
+        	}
+        	expandNode(currentNode, false);
+        	if(nodes.isEmpty()) {
+        		break;
+        	}
+        }
+    }    
     
 
 }
