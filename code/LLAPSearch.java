@@ -1,5 +1,7 @@
 package code;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Stack;
@@ -7,6 +9,7 @@ import java.util.Stack;
 public class LLAPSearch extends GenericSearch {
     static ArrayList<Node> expansion = new ArrayList<>();
     static ArrayList<Node> nodes = new ArrayList<>();
+    static HashSet<String> states = new HashSet<>();
 
     static int initProsperity;
     static int initFood;
@@ -44,25 +47,25 @@ public class LLAPSearch extends GenericSearch {
     public static String solve(String initalState, String strategy, Boolean visualize) {
         nodes.clear();
         expansion.clear();
+        states.clear();
         String[] initalArray = initalState.split(";");
         initializeVariables(initalArray);
-        
+
         Node initNode = new Node(initProsperity, initFood, initMaterials, initEnergy, 0, null, null, 0);
         switch (strategy) {
             case "BF":
                 BF(initNode);
                 break;
             case "DF":
-                
+                depthFirst(initNode);
                 break;
             case "ID":
                 iterativeDeepening(initNode);
                 break;
             case "UC":
-                
+                ucs(initNode);
                 break;
-            
-        
+
             default:
                 break;
         }
@@ -70,20 +73,23 @@ public class LLAPSearch extends GenericSearch {
     }
 
     private static String generateResultString() {
-    	ArrayList<Node> resultNodes = new ArrayList<>();
-    	String res = "";
+        ArrayList<Node> resultNodes = new ArrayList<>();
+        String res = "";
         Node currentNode = expansion.get(expansion.size() - 1);
-        if (currentNode.prosperity < 100){
+        if (currentNode.prosperity < 100) {
             return "NOSOLUTION";
         }
-        while(currentNode.parentNode != null) {
-        	resultNodes.add(currentNode);
-        	currentNode = currentNode.parentNode;
+        while (currentNode.parentNode != null) {
+            resultNodes.add(currentNode);
+            currentNode = currentNode.parentNode;
         }
-        while(!resultNodes.isEmpty()){
-            res += resultNodes.remove(resultNodes.size()-1).operator + ",";
+        if (!resultNodes.isEmpty())
+            res += resultNodes.remove(resultNodes.size() - 1).operator;
+        while (!resultNodes.isEmpty()) {
+            res += "," + resultNodes.remove(resultNodes.size() - 1).operator;
         }
-        res += ";" + Integer.toString(expansion.get(expansion.size() - 1).moneySpent) + ";" + Integer.toString(expansion.size());
+        res += ";" + Integer.toString(expansion.get(expansion.size() - 1).moneySpent) + ";"
+                + Integer.toString(expansion.size());
         System.out.println(res);
         return res;
     }
@@ -150,6 +156,15 @@ public class LLAPSearch extends GenericSearch {
 
     public static void expandNode(Node node, boolean type) {
         // type true = stack, false = queue
+        if (type)
+            nodes.remove(nodes.size() - 1); // try removing using object
+        else
+            nodes.remove(0);
+        String state = new State(node).toString();
+        if (states.contains(state)) {
+            return;
+        }
+        states.add(state);
         expansion.add(node);
         Node newNode = new Node(node);
         newNode.food--;
@@ -158,12 +173,8 @@ public class LLAPSearch extends GenericSearch {
         newNode.money -= upkeepCost;
         newNode.moneySpent += upkeepCost;
         newNode.depth += 1;
-        if (newNode.money >= 0 && newNode.food >= 0 && newNode.materials >= 0 && newNode.energy >= 0 ) {
+        if (newNode.money >= 0 && newNode.food >= 0 && newNode.materials >= 0 && newNode.energy >= 0) {
 
-            if (type)
-                nodes.remove(nodes.size() - 1); // try removing using object
-            else
-                nodes.remove(0);
 
             if (newNode.waitTime == 0) {
                 if (newNode.flagFood) {
@@ -189,25 +200,25 @@ public class LLAPSearch extends GenericSearch {
                 reqFood.flagFood = true;
                 reqFood.waitTime = requestFoodDelay;
                 reqFood.parentNode = node;
-                reqFood.operator = "reqFood";
+                reqFood.operator = "requestFood";
                 nodes.add(reqFood);
                 // request materials node creation and addition
                 Node reqMaterials = new Node(newNode);
                 reqMaterials.flagMaterials = true;
                 reqMaterials.waitTime = requestMaterialsDelay;
                 reqMaterials.parentNode = node;
-                reqMaterials.operator = "reqMaterials";
+                reqMaterials.operator = "requestMaterials";
                 nodes.add(reqMaterials);
                 // request energy node creation and addition
                 Node reqEnergy = new Node(newNode);
                 reqEnergy.flagEnergy = true;
                 reqEnergy.waitTime = requestEnergyDelay;
                 reqEnergy.parentNode = node;
-                reqEnergy.operator = "reqEnergy";
+                reqEnergy.operator = "requestEnergy";
                 nodes.add(reqEnergy);
             }
             // wait node creation and addition
-            if (node.waitTime > 0) {    
+            if (node.waitTime > 0) {
                 Node wait = new Node(newNode);
                 wait.waitTime--;
                 wait.parentNode = node;
@@ -215,7 +226,8 @@ public class LLAPSearch extends GenericSearch {
                 nodes.add(wait);
             }
             // Build 1 and 2 creation and addition
-            if (newNode.food >= build1Food - 1 && newNode.energy >= build1Energy - 1 && newNode.materials >= build1Materials - 1
+            if (newNode.food >= build1Food - 1 && newNode.energy >= build1Energy - 1
+                    && newNode.materials >= build1Materials - 1
                     && newNode.money >= build1TotalPrice - upkeepCost) {
                 Node Build1 = new Node(newNode);
                 Build1.food -= build1Food - 1;
@@ -226,13 +238,14 @@ public class LLAPSearch extends GenericSearch {
                 Build1.parentNode = node;
                 Build1.moneySpent += build1TotalPrice - upkeepCost;
                 Build1.operator = "Build1";
-                if (Build1.waitTime!=0) {
+                if (Build1.waitTime != 0) {
                     Build1.waitTime--;
                 }
                 if (Build1.money >= 0)
                     nodes.add(Build1);
             }
-            if (newNode.food >= build2Food - 1 && newNode.energy >= build2Energy - 1 && newNode.materials >= build2Materials - 1
+            if (newNode.food >= build2Food - 1 && newNode.energy >= build2Energy - 1
+                    && newNode.materials >= build2Materials - 1
                     && newNode.money >= build2TotalPrice - upkeepCost) {
                 Node Build2 = new Node(newNode);
                 Build2.food -= build2Food - 1;
@@ -243,7 +256,7 @@ public class LLAPSearch extends GenericSearch {
                 Build2.parentNode = node;
                 Build2.moneySpent += build2TotalPrice - upkeepCost;
                 Build2.operator = "Build2";
-                if (Build2.waitTime!=0) {
+                if (Build2.waitTime != 0) {
                     Build2.waitTime--;
                 }
                 if (Build2.money >= 0)
@@ -252,88 +265,95 @@ public class LLAPSearch extends GenericSearch {
         }
     }
 
-    public static void iterativeDeepening(Node initNode){
-        nodes.clear();
-        expansion.clear();
+    public static void iterativeDeepening(Node initNode) {
         nodes.add(initNode);
         boolean endLoop = false;
         int i = 0;
-        while (!endLoop){
+        while (!endLoop) {
             endLoop = true;
-            while(!nodes.isEmpty()){
+            while (!nodes.isEmpty()) {
                 Node currentNode = nodes.get(nodes.size() - 1);
                 if (currentNode.depth < i)
                     expandNode(currentNode, true);
-                else{
+                else {
                     nodes.remove(nodes.size() - 1);
                     expansion.add(currentNode);
-                    if(currentNode.money > 0)
+                    if (currentNode.money > 0)
                         endLoop = false;
                 }
-                if(goalState(currentNode)){
+                if (goalState(currentNode)) {
                     endLoop = true;
                     break;
                 }
             }
             nodes.clear();
             nodes.add(initNode);
+            states.clear();
             i++;
-                
+
         }
     }
 
-    
     public static void ucs(Node node){
         nodes.add(node);
         expandNode(node, false);
-        Stack<Node> ucs = new Stack<>();
-        int[] min = new int[2];
+        ArrayList<Node> ucs = new ArrayList<>();
+        Node min = new Node(nodes.get(0));
         // get the individual nodes and push into stack
-                min[0] = 0;
-                min[1] = node.money;
-                ucs.push(nodes.get(0));
+                ucs.add(nodes.get(0));
         for (int j = 1; j <= ucs.size(); j++){
              // lowest cost node should be on top
-            Node current = ucs.pop(); 
+            for (int i = 1; i <= nodes.size() - 1; i++) {
+            if (nodes.get(i).moneySpent < min.moneySpent){
+                min = nodes.get(i);
+            }
+            ucs.add(nodes.get(i));
+            ucs.remove(min);
+            ucs.add(min);
+            }
+            Node current = ucs.remove(ucs.size()-1); 
             expandNode(current, false);
+            System.out.println(current.operator);
             if (goalState(current)){
                 break;
             }
-            for (int i = 1; i <= nodes.size()-1; i++) {
-            int money = nodes.get(i).money;
-            if (nodes.get(i).money < min[1]){
-                min[0] = i;
-                min[1] = money;
-            }
-            else{
-                ucs.push(nodes.get(i));
-            }
-            ucs.push(nodes.get(min[0]));
-            }
+
 
         }
-   
-        
+
+
         //remainingprosperity/min(prosperityb1 + prosperityb2) * min(b1p,b2p).buildcost (+ previouscost) A*
         //remainingprosperity greedy
         //moneyspent greedy
         //
-        
-        } 
-    public static void BF(Node initNode) {
-    	nodes.add(initNode);
-        while(true) {
-        	Node currentNode = nodes.get(0);
-        	if(goalState(currentNode)) {
-        		expansion.add(currentNode);
-        		break;
-        	}
-        	expandNode(currentNode, false);
-        	if(nodes.isEmpty()) {
-        		break;
-        	}
+
         }
-    }    
-    
+            
+
+    public static void BF(Node initNode) {
+        nodes.add(initNode);
+        while (true) {
+            Node currentNode = nodes.get(0);
+            if (goalState(currentNode)) {
+                expansion.add(currentNode);
+                break;
+            }
+            expandNode(currentNode, false);
+            if (nodes.isEmpty()) {
+                break;
+            }
+        }
+    }
+
+    public static void depthFirst(Node initNode) {
+        nodes.add(initNode);
+        while (!nodes.isEmpty()) {
+            Node currentNode = nodes.get(nodes.size() - 1);
+            expandNode(currentNode, true);
+            if (goalState(currentNode)) {
+                break;
+            }
+        }
+    }
 
 }
