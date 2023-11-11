@@ -66,7 +66,6 @@ public class LLAPSearch extends GenericSearch {
             default:
                 break;
         }
-        System.out.println(expansion);
         return generateResultString();
     }
 
@@ -85,6 +84,7 @@ public class LLAPSearch extends GenericSearch {
             res += resultNodes.remove(resultNodes.size()-1).operator + ",";
         }
         res += ";" + Integer.toString(expansion.get(expansion.size() - 1).moneySpent) + ";" + Integer.toString(expansion.size());
+        System.out.println(res);
         return res;
     }
 
@@ -151,69 +151,73 @@ public class LLAPSearch extends GenericSearch {
     public static void expandNode(Node node, boolean type) {
         // type true = stack, false = queue
         expansion.add(node);
-        node.food--;
-        node.materials--;
-        node.energy--;
-        node.money -= upkeepCost;
-        node.moneySpent += upkeepCost;
-        if (node.money >= 0) {
+        Node newNode = new Node(node);
+        newNode.food--;
+        newNode.materials--;
+        newNode.energy--;
+        newNode.money -= upkeepCost;
+        newNode.moneySpent += upkeepCost;
+        newNode.depth += 1;
+        if (newNode.money >= 0 && newNode.food >= 0 && newNode.materials >= 0 && newNode.energy >= 0 ) {
 
             if (type)
                 nodes.remove(nodes.size() - 1); // try removing using object
             else
                 nodes.remove(0);
 
-            if (node.waitTime == 0) {
-                if (node.flagFood) {
-                    node.food += requestFoodAmount;
-                    node.flagFood = false;
+            if (newNode.waitTime == 0) {
+                if (newNode.flagFood) {
+                    newNode.food += requestFoodAmount;
+                    if (newNode.food > 50)
+                        newNode.food = 50;
+                    newNode.flagFood = false;
                 }
-                if (node.flagMaterials) {
-                    node.materials += requestMaterialsAmount;
-                    node.flagMaterials = false;
+                if (newNode.flagMaterials) {
+                    newNode.materials += requestMaterialsAmount;
+                    if (newNode.materials > 50)
+                        newNode.materials = 50;
+                    newNode.flagMaterials = false;
                 }
-                if (node.flagEnergy) {
-                    node.energy += requestEnergyAmount;
-                    node.flagEnergy = false;
+                if (newNode.flagEnergy) {
+                    newNode.energy += requestEnergyAmount;
+                    if (newNode.energy > 50)
+                        newNode.energy = 50;
+                    newNode.flagEnergy = false;
                 }
                 // request food node creation and addition
-                Node reqFood = new Node(node);
+                Node reqFood = new Node(newNode);
                 reqFood.flagFood = true;
                 reqFood.waitTime = requestFoodDelay;
                 reqFood.parentNode = node;
                 reqFood.operator = "reqFood";
-                reqFood.depth += 1;
                 nodes.add(reqFood);
                 // request materials node creation and addition
-                Node reqMaterials = new Node(node);
+                Node reqMaterials = new Node(newNode);
                 reqMaterials.flagMaterials = true;
                 reqMaterials.waitTime = requestMaterialsDelay;
                 reqMaterials.parentNode = node;
                 reqMaterials.operator = "reqMaterials";
-                reqMaterials.depth += 1;
                 nodes.add(reqMaterials);
                 // request energy node creation and addition
-                Node reqEnergy = new Node(node);
+                Node reqEnergy = new Node(newNode);
                 reqEnergy.flagEnergy = true;
                 reqEnergy.waitTime = requestEnergyDelay;
                 reqEnergy.parentNode = node;
                 reqEnergy.operator = "reqEnergy";
-                reqEnergy.depth += 1;
                 nodes.add(reqEnergy);
             }
             // wait node creation and addition
             if (node.waitTime > 0) {    
-                Node wait = new Node(node);
+                Node wait = new Node(newNode);
                 wait.waitTime--;
                 wait.parentNode = node;
                 wait.operator = "wait";
-                wait.depth += 1;
                 nodes.add(wait);
             }
             // Build 1 and 2 creation and addition
-            if (node.food > build1Food - 1 && node.energy > build1Energy - 1 && node.materials > build1Materials - 1
-                    && node.money > build1TotalPrice - upkeepCost) {
-                Node Build1 = new Node(node);
+            if (newNode.food >= build1Food - 1 && newNode.energy >= build1Energy - 1 && newNode.materials >= build1Materials - 1
+                    && newNode.money >= build1TotalPrice - upkeepCost) {
+                Node Build1 = new Node(newNode);
                 Build1.food -= build1Food - 1;
                 Build1.materials -= build1Materials - 1;
                 Build1.energy -= build1Energy - 1;
@@ -222,16 +226,15 @@ public class LLAPSearch extends GenericSearch {
                 Build1.parentNode = node;
                 Build1.moneySpent += build1TotalPrice - upkeepCost;
                 Build1.operator = "Build1";
-                Build1.depth += 1;
                 if (Build1.waitTime!=0) {
                     Build1.waitTime--;
                 }
                 if (Build1.money >= 0)
                     nodes.add(Build1);
             }
-            if (node.food > build2Food - 1 && node.energy > build2Energy - 1 && node.materials > build2Materials - 1
-                    && node.money > build2TotalPrice - upkeepCost) {
-                Node Build2 = new Node(node);
+            if (newNode.food >= build2Food - 1 && newNode.energy >= build2Energy - 1 && newNode.materials >= build2Materials - 1
+                    && newNode.money >= build2TotalPrice - upkeepCost) {
+                Node Build2 = new Node(newNode);
                 Build2.food -= build2Food - 1;
                 Build2.materials -= build2Materials - 1;
                 Build2.energy -= build2Energy - 1;
@@ -240,7 +243,6 @@ public class LLAPSearch extends GenericSearch {
                 Build2.parentNode = node;
                 Build2.moneySpent += build2TotalPrice - upkeepCost;
                 Build2.operator = "Build2";
-                Build2.depth += 1;
                 if (Build2.waitTime!=0) {
                     Build2.waitTime--;
                 }
@@ -258,15 +260,13 @@ public class LLAPSearch extends GenericSearch {
         int i = 0;
         while (!endLoop){
             endLoop = true;
-            for (int j = 0; j <= i; j++){
+            while(!nodes.isEmpty()){
                 Node currentNode = nodes.get(nodes.size() - 1);
                 if (currentNode.depth < i)
                     expandNode(currentNode, true);
                 else{
                     nodes.remove(nodes.size() - 1);
                     expansion.add(currentNode);
-                    if (!nodes.isEmpty())
-                        j -= 1;
                     if(currentNode.money > 0)
                         endLoop = false;
                 }

@@ -12,7 +12,7 @@ public class Node {
 
     int waitTime;
 
-    int money = 10000;
+    int money = 100000;
 
     int depth;
 
