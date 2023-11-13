@@ -1,5 +1,5 @@
 package code;
-public class Node {
+public class Node implements Comparable<Node>{
     int prosperity;
     int food;
     int materials;
@@ -43,6 +43,11 @@ public class Node {
         this.waitTime = node.waitTime;
         this.money = node.money;
         this.depth = node.depth;
+    }
+
+    @Override
+    public int compareTo(Node other){
+        return  this.moneySpent - other.moneySpent;
     }
 
     // public void requestFood(int amount, int foodTime){

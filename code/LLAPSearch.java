@@ -3,6 +3,7 @@ package code;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Stack;
 
@@ -156,10 +157,10 @@ public class LLAPSearch extends GenericSearch {
 
     public static void expandNode(Node node, boolean type) {
         // type true = stack, false = queue
-        if (type)
-            nodes.remove(nodes.size() - 1); // try removing using object
-        else
-            nodes.remove(0);
+        // if (type)
+        //     nodes.remove(nodes.size() - 1); // try removing using object
+        // else
+        nodes.remove(node);
         String state = new State(node).toString();
         if (states.contains(state)) {
             return;
@@ -196,26 +197,32 @@ public class LLAPSearch extends GenericSearch {
                     newNode.flagEnergy = false;
                 }
                 // request food node creation and addition
-                Node reqFood = new Node(newNode);
-                reqFood.flagFood = true;
-                reqFood.waitTime = requestFoodDelay;
-                reqFood.parentNode = node;
-                reqFood.operator = "requestFood";
-                nodes.add(reqFood);
+                if(newNode.food + requestFoodAmount <= 50){
+                    Node reqFood = new Node(newNode);
+                    reqFood.flagFood = true;
+                    reqFood.waitTime = requestFoodDelay;
+                    reqFood.parentNode = node;
+                    reqFood.operator = "requestFood";
+                    nodes.add(reqFood);
+                }
                 // request materials node creation and addition
-                Node reqMaterials = new Node(newNode);
-                reqMaterials.flagMaterials = true;
-                reqMaterials.waitTime = requestMaterialsDelay;
-                reqMaterials.parentNode = node;
-                reqMaterials.operator = "requestMaterials";
-                nodes.add(reqMaterials);
+                if(newNode.materials + requestMaterialsAmount <= 50){
+                    Node reqMaterials = new Node(newNode);
+                    reqMaterials.flagMaterials = true;
+                    reqMaterials.waitTime = requestMaterialsDelay;
+                    reqMaterials.parentNode = node;
+                    reqMaterials.operator = "requestMaterials";
+                    nodes.add(reqMaterials);
+                }
                 // request energy node creation and addition
-                Node reqEnergy = new Node(newNode);
-                reqEnergy.flagEnergy = true;
-                reqEnergy.waitTime = requestEnergyDelay;
-                reqEnergy.parentNode = node;
-                reqEnergy.operator = "requestEnergy";
-                nodes.add(reqEnergy);
+                if(newNode.energy + requestEnergyAmount <= 50){
+                    Node reqEnergy = new Node(newNode);
+                    reqEnergy.flagEnergy = true;
+                    reqEnergy.waitTime = requestEnergyDelay;
+                    reqEnergy.parentNode = node;
+                    reqEnergy.operator = "requestEnergy";
+                    nodes.add(reqEnergy);
+                }
             }
             // wait node creation and addition
             if (node.waitTime > 0) {
@@ -295,39 +302,39 @@ public class LLAPSearch extends GenericSearch {
     }
 
     public static void ucs(Node node){
-        nodes.add(node);
-        expandNode(node, false);
-        ArrayList<Node> ucs = new ArrayList<>();
-        Node min = new Node(nodes.get(0));
-        // get the individual nodes and push into stack
-                ucs.add(nodes.get(0));
-        for (int j = 1; j <= ucs.size(); j++){
-             // lowest cost node should be on top
-            for (int i = 1; i <= nodes.size() - 1; i++) {
-            if (nodes.get(i).moneySpent < min.moneySpent){
-                min = nodes.get(i);
+        PriorityQueue<Node> queue = new PriorityQueue<>();
+        queue.add(node);
+        while (!nodes.isEmpty() || !queue.isEmpty()){
+            while (!nodes.isEmpty()){
+                queue.add(nodes.remove(0));
             }
-            ucs.add(nodes.get(i));
-            ucs.remove(min);
-            ucs.add(min);
-            }
-            Node current = ucs.remove(ucs.size()-1); 
-            expandNode(current, false);
-            System.out.println(current.operator);
-            if (goalState(current)){
-                break;
-            }
-
-
+            Node currentNode = queue.remove();
+            nodes.add(currentNode);
+            expandNode(currentNode, false);
         }
-
-
-        //remainingprosperity/min(prosperityb1 + prosperityb2) * min(b1p,b2p).buildcost (+ previouscost) A*
-        //remainingprosperity greedy
-        //moneyspent greedy
-        //
-
-        }
+    }
+    //     ArrayList<Node> ucs = new ArrayList<>();
+    //     Node min = new Node(nodes.get(0));
+    //     // get the individual nodes and push into stack
+    //             ucs.add(nodes.get(0));
+    //     for (int j = 1; j <= ucs.size(); j++){
+    //          // lowest cost node should be on top
+    //         for (int i = 1; i <= nodes.size() - 1; i++) {
+    //         if (nodes.get(i).moneySpent < min.moneySpent){
+    //             min = nodes.get(i);
+    //         }
+    //         ucs.add(nodes.get(i));
+    //         ucs.remove(min);
+    //         ucs.add(min);
+    //         }
+    //         Node current = ucs.remove(ucs.size()-1); 
+    //         expandNode(current, false);
+    //         System.out.println(current.operator);
+    //         if (goalState(current)){
+    //             break;
+    //         }
+    //     }
+    //     }
             
 
     public static void BF(Node initNode) {

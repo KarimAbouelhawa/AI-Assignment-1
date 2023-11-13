@@ -237,7 +237,7 @@ public class LLAPPublicGrading {
 	}
 	@Test(timeout = 120000)
 	public void testc0() throws Exception {
-		String solution = LLAPSearch.solve(initialState0, "UC", false);
+			String solution = LLAPSearch.solve(initialState0, "UC", false);
 		solution = solution.replace(" ", "");
 		LLAPPlanChecker pc = new LLAPPlanChecker(initialState0);
 		assertTrue("The output actions do not lead to a goal state.", pc.applyPlan(initialState0, solution));
