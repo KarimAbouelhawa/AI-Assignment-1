@@ -16,6 +16,8 @@ public class Node implements Comparable<Node>{
 
     int depth;
 
+    int comparator;
+
     boolean flagFood, flagMaterials, flagEnergy;
     
     public Node(int prosperity, int food, int materials, int energy, int moneySpent, Node parentNode, String operator, int depth){
@@ -27,6 +29,7 @@ public class Node implements Comparable<Node>{
         this.parentNode = parentNode;
         this.operator = operator;
         this.depth = depth;
+        this.comparator = moneySpent;
     }
 
     public Node(Node node){
@@ -43,11 +46,12 @@ public class Node implements Comparable<Node>{
         this.waitTime = node.waitTime;
         this.money = node.money;
         this.depth = node.depth;
+        this.comparator = node.moneySpent;
     }
 
     @Override
     public int compareTo(Node other){
-        return  this.moneySpent - other.moneySpent;
+        return  this.comparator - other.comparator;
     }
 
     // public void requestFood(int amount, int foodTime){

@@ -66,6 +66,19 @@ public class LLAPSearch extends GenericSearch {
             case "UC":
                 ucs(initNode);
                 break;
+            case "GR1":
+                greedy(initNode, true);
+                break;
+            case "GR2":
+                greedy(initNode, false);
+                break;
+            case "AS1":
+                AStar(initNode, true);
+                break;
+            case "AS2":
+                AStar(initNode, false);
+                break;
+            
 
             default:
                 break;
@@ -78,6 +91,14 @@ public class LLAPSearch extends GenericSearch {
         String res = "";
         Node currentNode = expansion.get(expansion.size() - 1);
         if (currentNode.prosperity < 100) {
+            System.out.println(currentNode.operator);
+            System.out.println(currentNode.prosperity);
+            System.out.println(currentNode.depth);
+            System.out.println(currentNode.food);
+            System.out.println(currentNode.energy);
+            System.out.println(currentNode.materials);
+            System.out.println(currentNode.moneySpent);
+            System.out.println(upkeepCost);
             return "NOSOLUTION";
         }
         while (currentNode.parentNode != null) {
@@ -308,33 +329,16 @@ public class LLAPSearch extends GenericSearch {
             while (!nodes.isEmpty()){
                 queue.add(nodes.remove(0));
             }
+
             Node currentNode = queue.remove();
+            if (goalState(currentNode)){
+                expansion.add(currentNode);
+                return;
+            }
             nodes.add(currentNode);
             expandNode(currentNode, false);
         }
     }
-    //     ArrayList<Node> ucs = new ArrayList<>();
-    //     Node min = new Node(nodes.get(0));
-    //     // get the individual nodes and push into stack
-    //             ucs.add(nodes.get(0));
-    //     for (int j = 1; j <= ucs.size(); j++){
-    //          // lowest cost node should be on top
-    //         for (int i = 1; i <= nodes.size() - 1; i++) {
-    //         if (nodes.get(i).moneySpent < min.moneySpent){
-    //             min = nodes.get(i);
-    //         }
-    //         ucs.add(nodes.get(i));
-    //         ucs.remove(min);
-    //         ucs.add(min);
-    //         }
-    //         Node current = ucs.remove(ucs.size()-1); 
-    //         expandNode(current, false);
-    //         System.out.println(current.operator);
-    //         if (goalState(current)){
-    //             break;
-    //         }
-    //     }
-    //     }
             
 
     public static void BF(Node initNode) {
@@ -363,4 +367,98 @@ public class LLAPSearch extends GenericSearch {
         }
     }
 
+        //remainingprosperity/max(prosperityb1 + prosperityb2) * min(b1p,b2p).buildcost (+ previouscost) A*
+        //remainingprosperity greedy
+        //moneyspent greedy
+        //
+
+    public static void greedy(Node initNode, boolean type){
+        if (type)
+        {
+            PriorityQueue<Node> queue = new PriorityQueue<>();
+            queue.add(initNode);
+            while (!nodes.isEmpty() || !queue.isEmpty()){
+                while (!nodes.isEmpty()){
+                    Node newNode = nodes.remove(0);
+                    newNode.comparator = - newNode.money;
+                    queue.add(newNode);
+                }
+                Node currentNode = queue.remove();
+                if (goalState(currentNode)){
+                    expansion.add(currentNode);
+                    return;
+                }
+                nodes.add(currentNode);
+                expandNode(currentNode, false);
+            }
+        }
+        else
+        {
+            PriorityQueue<Node> queue = new PriorityQueue<>();
+            queue.add(initNode);
+            int minBuildCost = build1Prosperity < build2Prosperity ?  build1TotalPrice :  build2TotalPrice;
+            while (!nodes.isEmpty() || !queue.isEmpty()){
+                while (!nodes.isEmpty()){
+                    Node newNode = nodes.remove(0);
+                    int newComparator = ((100 - newNode.prosperity) / (Math.min(build1Prosperity,build2Prosperity))) * minBuildCost;
+                    newNode.comparator = - newComparator;
+                    queue.add(newNode);
+                }
+                Node currentNode = queue.remove();
+                if (goalState(currentNode)){
+                    expansion.add(currentNode);
+                    return;
+                }
+                nodes.add(currentNode);
+                expandNode(currentNode, false); 
+        }
+    }
+
+}
+
+public static void AStar(Node initNode, boolean type){
+        if (type)
+        {
+            PriorityQueue<Node> queue = new PriorityQueue<>();
+            queue.add(initNode);
+            int maxBuildCost = build1Prosperity > build2Prosperity ?  build1TotalPrice :  build2TotalPrice;
+            while (!nodes.isEmpty() || !queue.isEmpty()){
+                while (!nodes.isEmpty()){
+                    Node newNode = nodes.remove(0);
+                    int newComparator = ((100 - newNode.prosperity) / (Math.max(build1Prosperity,build2Prosperity))) * maxBuildCost;
+                    newNode.comparator = (newComparator + newNode.moneySpent);
+                    queue.add(newNode);
+                }
+                Node currentNode = queue.remove();
+                if (goalState(currentNode)){
+                    expansion.add(currentNode);
+                    return;
+                }
+                nodes.add(currentNode);
+                expandNode(currentNode, false);
+            }
+        }
+        else
+        {
+            PriorityQueue<Node> queue = new PriorityQueue<>();
+            queue.add(initNode);
+            int maxBuildFood = build1Prosperity > build2Prosperity ?  build1Food :  build2Food;
+            while (!nodes.isEmpty() || !queue.isEmpty()){
+                while (!nodes.isEmpty()){
+                    Node newNode = nodes.remove(0);
+                    int newComparator = (100 - newNode.prosperity / Math.max(build1Prosperity,build2Prosperity)) * maxBuildFood * priceFood;
+                    newNode.comparator = - newComparator;
+                    queue.add(newNode);
+                }
+                Node currentNode = queue.remove();
+                if (goalState(currentNode)){
+                    expansion.add(currentNode);
+                    return;
+                }
+                nodes.add(currentNode);
+                expandNode(currentNode, false); 
+        }
+    }
+
+}
 }
