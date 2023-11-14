@@ -365,7 +365,7 @@ public class LLAPSearch extends GenericSearch {
             while (!nodes.isEmpty() || !queue.isEmpty()){
                 while (!nodes.isEmpty()){
                     Node newNode = nodes.remove(0);
-                    newNode.comparator = - newNode.money;
+                    newNode.comparator = -newNode.money;
                     queue.add(newNode);
                 }
                 Node currentNode = queue.remove();
@@ -386,7 +386,7 @@ public class LLAPSearch extends GenericSearch {
                 while (!nodes.isEmpty()){
                     Node newNode = nodes.remove(0);
                     int newComparator = ((100 - newNode.prosperity) / (Math.min(build1Prosperity,build2Prosperity))) * minBuildCost;
-                    newNode.comparator = - newComparator;
+                    newNode.comparator = newComparator;
                     queue.add(newNode);
                 }
                 Node currentNode = queue.remove();
@@ -432,7 +432,7 @@ public static void AStar(Node initNode, boolean type){
                 while (!nodes.isEmpty()){
                     Node newNode = nodes.remove(0);
                     int newComparator = (100 - newNode.prosperity / Math.max(build1Prosperity,build2Prosperity)) * maxBuildFood * priceFood;
-                    newNode.comparator = - newComparator;
+                    newNode.comparator = (newComparator + newNode.moneySpent);
                     queue.add(newNode);
                 }
                 Node currentNode = queue.remove();
