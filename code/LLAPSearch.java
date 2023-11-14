@@ -2,10 +2,7 @@ package code;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.Stack;
 
 public class LLAPSearch extends GenericSearch {
     static ArrayList<Node> expansion = new ArrayList<>();
@@ -91,14 +88,6 @@ public class LLAPSearch extends GenericSearch {
         String res = "";
         Node currentNode = expansion.get(expansion.size() - 1);
         if (currentNode.prosperity < 100) {
-            System.out.println(currentNode.operator);
-            System.out.println(currentNode.prosperity);
-            System.out.println(currentNode.depth);
-            System.out.println(currentNode.food);
-            System.out.println(currentNode.energy);
-            System.out.println(currentNode.materials);
-            System.out.println(currentNode.moneySpent);
-            System.out.println(upkeepCost);
             return "NOSOLUTION";
         }
         while (currentNode.parentNode != null) {
@@ -176,7 +165,7 @@ public class LLAPSearch extends GenericSearch {
             return false;
     }
 
-    public static void expandNode(Node node, boolean type) {
+    public static void expandNode(Node node) {
         // type true = stack, false = queue
         // if (type)
         //     nodes.remove(nodes.size() - 1); // try removing using object
@@ -302,7 +291,7 @@ public class LLAPSearch extends GenericSearch {
             while (!nodes.isEmpty()) {
                 Node currentNode = nodes.get(nodes.size() - 1);
                 if (currentNode.depth < i)
-                    expandNode(currentNode, true);
+                    expandNode(currentNode);
                 else {
                     nodes.remove(nodes.size() - 1);
                     expansion.add(currentNode);
@@ -336,7 +325,7 @@ public class LLAPSearch extends GenericSearch {
                 return;
             }
             nodes.add(currentNode);
-            expandNode(currentNode, false);
+            expandNode(currentNode);
         }
     }
             
@@ -349,7 +338,7 @@ public class LLAPSearch extends GenericSearch {
                 expansion.add(currentNode);
                 break;
             }
-            expandNode(currentNode, false);
+            expandNode(currentNode);
             if (nodes.isEmpty()) {
                 break;
             }
@@ -360,17 +349,13 @@ public class LLAPSearch extends GenericSearch {
         nodes.add(initNode);
         while (!nodes.isEmpty()) {
             Node currentNode = nodes.get(nodes.size() - 1);
-            expandNode(currentNode, true);
+            expandNode(currentNode);
             if (goalState(currentNode)) {
                 break;
             }
         }
     }
 
-        //remainingprosperity/max(prosperityb1 + prosperityb2) * min(b1p,b2p).buildcost (+ previouscost) A*
-        //remainingprosperity greedy
-        //moneyspent greedy
-        //
 
     public static void greedy(Node initNode, boolean type){
         if (type)
@@ -389,7 +374,7 @@ public class LLAPSearch extends GenericSearch {
                     return;
                 }
                 nodes.add(currentNode);
-                expandNode(currentNode, false);
+                expandNode(currentNode);
             }
         }
         else
@@ -410,7 +395,7 @@ public class LLAPSearch extends GenericSearch {
                     return;
                 }
                 nodes.add(currentNode);
-                expandNode(currentNode, false); 
+                expandNode(currentNode); 
         }
     }
 
@@ -435,7 +420,7 @@ public static void AStar(Node initNode, boolean type){
                     return;
                 }
                 nodes.add(currentNode);
-                expandNode(currentNode, false);
+                expandNode(currentNode);
             }
         }
         else
@@ -456,7 +441,7 @@ public static void AStar(Node initNode, boolean type){
                     return;
                 }
                 nodes.add(currentNode);
-                expandNode(currentNode, false); 
+                expandNode(currentNode); 
         }
     }
 
